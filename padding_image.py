@@ -105,6 +105,12 @@ def padding_image(file_path,file_name):
 
     return new_image,label
 
+
+def down_sample_image(original_image,pixel_interval):
+    return original_image[::pixel_interval,::pixel_interval,:]
+
+
+
 def iter_dataset(file_path,model,batch_size):
     final_path=file_path+model+'/'
     training_data=[[],[]]
@@ -125,7 +131,10 @@ def iter_dataset(file_path,model,batch_size):
 
 
 if __name__ == '__main__':
-    file_path='/usa/psu/Documents/CISC849/data/'
-    for ii in iter_dataset(file_path,'test',100):
-        print(ii[1])
-        print('Size',len(ii[1]))
+    file_path='/usa/psu/Documents/CISC849/test_image/test/'
+    file_name='container_44.png'
+    image,label=padding_image(file_path,file_name)
+    d_image=down_sample_image(image,4)
+    plt.figure()
+    plt.imshow(d_image)
+    plt.show()
