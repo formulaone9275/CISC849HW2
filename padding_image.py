@@ -101,7 +101,69 @@ def padding_image(file_path,file_name):
     #container [0,0,0,1]
     file_label=file_name.split('_')
     label=category_label[file_label[0]]
-    #training_data=[[new_image],[[1,0,0,0]]]
+
+    return new_image,label
+
+def padding_depth_image(file_path,file_name):
+    #ubu_path='/usa/psu/Documents/CISC849/data/test/device_622.png'
+    data=mpimg.imread(file_path+file_name)
+    #plt.figure()
+    #plt.imshow(data)
+    #plt.show()
+    #print(data.shape)
+
+    l,w=data.shape
+    new_l=350
+    new_w=430
+    new_image=np.zeros((new_l,new_w,1))
+    length_diff_up=(new_l-l)//2
+    width_diff_left=(new_w-w)//2
+    #put the image in the center of the new image
+    new_image[length_diff_up:length_diff_up+l,width_diff_left:width_diff_left+w,0]=data
+    #generate the up part of the new image
+    up_edge=data[0:1,0:w]
+
+    up_part=up_edge
+
+    for ii in range(length_diff_up-1):
+        up_part=np.concatenate((up_part,up_edge),axis=0)
+    new_image[0:length_diff_up,width_diff_left:width_diff_left+w,0]=up_part
+
+    #generate the bottom part of the new image
+    bottom_edge=data[l-1:l,0:w]
+    bottom_part=bottom_edge
+
+    for ii in range(length_diff_up-1):
+        bottom_part=np.concatenate((bottom_part,bottom_edge),axis=0)
+    new_image[length_diff_up+l:length_diff_up*2+l,width_diff_left:width_diff_left+w,0]=bottom_part
+
+    #generate the left part of the image
+    left_edge=new_image[0:new_l,width_diff_left:width_diff_left+1,:]
+
+    left_part=left_edge
+    for ii in range(width_diff_left-1):
+        left_part=np.concatenate((left_part,left_edge),axis=1)
+
+    new_image[0:new_l,0:width_diff_left,:]=left_part
+
+    #generate the right part of the image
+    right_edge=new_image[0:new_l,width_diff_left+w-1:width_diff_left+w,:]
+
+    right_part=right_edge
+    for ii in range(width_diff_left-1):
+        right_part=np.concatenate((right_part,right_edge),axis=1)
+
+    new_image[0:new_l,width_diff_left+w:width_diff_left*2+w,:]=right_part
+    #plt.figure()
+    #plt.imshow(new_image)
+    #plt.show()
+    #get the label of the image
+    #fruit [1,0,0,0]
+    #device [0,1,0,0]
+    #vegetable [0,0,1,0]
+    #container [0,0,0,1]
+    file_label=file_name.split('_')
+    label=category_label[file_label[0]]
 
     return new_image,label
 
@@ -111,12 +173,15 @@ def down_sample_image(original_image,pixel_interval):
 
 
 
-def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=1):
+def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=1,depth_image=False):
     final_path=file_path+model+'/'
     training_data=[[],[]]
     file_num=0
     for file_i in os.listdir(final_path):
-        image,label=padding_image(final_path,file_i)
+        if depth_image is True:
+            image,label=padding_depth_image(final_path,file_i)
+        else:
+            image,label=padding_image(final_path,file_i)
         if down_sample is True:
             ds_image=down_sample_image(image,pixel_interval)
         else:
@@ -135,7 +200,17 @@ def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=1):
 
 
 if __name__ == '__main__':
-    file_path='/usa/psu/Documents/CISC849/test_image//'
-    model='test'
-    for ii in iter_dataset(file_path,model,10,True,4):
-        print(np.array(ii[0]).shape)
+
+    #just testing, could delete the code below
+    file_path='/usa/psu/Documents/CISC849/depth_data/test/'
+    file_name='container_5.png'
+
+    image,label=padding_depth_image(file_path,file_name)
+    print(image.shape)
+    plt.figure()
+    plt.imshow(image[:,:,0])
+    plt.show()
+    data=mpimg.imread(file_path+file_name)
+    plt.figure()
+    plt.imshow(data)
+    plt.show()
