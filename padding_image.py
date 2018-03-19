@@ -111,13 +111,17 @@ def down_sample_image(original_image,pixel_interval):
 
 
 
-def iter_dataset(file_path,model,batch_size):
+def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=0):
     final_path=file_path+model+'/'
     training_data=[[],[]]
     file_num=0
     for file_i in os.listdir(final_path):
         image,label=padding_image(final_path,file_i)
-        training_data[0].append(image)
+        if down_sample is True:
+            ds_image=down_sample_image(image,pixel_interval)
+        else:
+            ds_image=image
+        training_data[0].append(ds_image)
         training_data[1].append(label)
         file_num+=1
         if file_num==batch_size:
@@ -131,10 +135,7 @@ def iter_dataset(file_path,model,batch_size):
 
 
 if __name__ == '__main__':
-    file_path='/usa/psu/Documents/CISC849/test_image/test/'
-    file_name='container_44.png'
-    image,label=padding_image(file_path,file_name)
-    d_image=down_sample_image(image,4)
-    plt.figure()
-    plt.imshow(d_image)
-    plt.show()
+    file_path='/usa/psu/Documents/CISC849/test_image//'
+    model='test'
+    for ii in iter_dataset(file_path,model,10,True,4):
+        print(np.array(ii[0]).shape)
