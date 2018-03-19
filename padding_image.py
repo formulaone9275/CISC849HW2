@@ -111,7 +111,7 @@ def down_sample_image(original_image,pixel_interval):
 
 
 
-def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=0):
+def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=1):
     final_path=file_path+model+'/'
     training_data=[[],[]]
     file_num=0
