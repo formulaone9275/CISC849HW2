@@ -1,3 +1,4 @@
+from __future__ import print_function,division
 import tensorflow as tf
 from padding_image import padding_image,iter_dataset
 import os
@@ -6,7 +7,7 @@ class CNNModel(object):
     def __init__(self,file_path,batch_size):
         self.file_path=file_path
         self.batch_size=batch_size
-        self.train_epoch=50
+        self.train_epoch=2
         self.sess=tf.Session()
         self.depth_image=False
         self.down_sample=False
@@ -17,8 +18,8 @@ class CNNModel(object):
         self.x = tf.placeholder(tf.float32, shape=[None, 350, 430,3])
         self.y_ = tf.placeholder(tf.float32, shape=[None, 4])
         self.regularizer=tf.contrib.layers.l2_regularizer(scale=1e-4)
-        self.keep_prob = tf.placeholder(tf.float32)
-        self.keep_prob_dense = tf.placeholder(tf.float32)
+        self.drop_prob = tf.placeholder(tf.float32)
+        self.drop_prob_dense = tf.placeholder(tf.float32)
         self.IsTraining = tf.placeholder(tf.bool)
 
         # Convolutional Layer #1
@@ -64,21 +65,21 @@ class CNNModel(object):
 
 
         dropout = tf.layers.dropout(
-            inputs=pool2_flat, rate=self.keep_prob,training=self.IsTraining)
+            inputs=pool2_flat, rate=self.drop_prob,training=self.IsTraining)
 
         dense1 = tf.layers.dense(inputs=dropout, units=512, activation=tf.nn.relu,
                                  kernel_regularizer =self.regularizer)
 
 
         dropout1 = tf.layers.dropout(
-            inputs=dense1, rate=self.keep_prob_dense,training=self.IsTraining)
+            inputs=dense1, rate=self.drop_prob_dense,training=self.IsTraining)
 
         dense2 = tf.layers.dense(inputs=dropout1, units=256, activation=tf.nn.relu,
                                  kernel_regularizer =self.regularizer)
 
 
         dropout2 = tf.layers.dropout(
-            inputs=dense2, rate=self.keep_prob_dense,training=self.IsTraining)
+            inputs=dense2, rate=self.drop_prob_dense,training=self.IsTraining)
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout2, units=4)
 
@@ -127,11 +128,11 @@ class CNNModel(object):
             step_error=0
             batch_num=1
             for batch_i in iter_dataset(file_path,'train',self.batch_size):
-                self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.keep_prob: 0.5,self.IsTraining:True,self.keep_prob_dense:0.2})
-                ce = self.cross_entropy.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.keep_prob: 0.5,self.IsTraining:True,self.keep_prob_dense:0.2})
+                self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2})
+                ce = self.cross_entropy.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2})
                 step_error+=ce
 
-                if batch_num%10==0:
+                if batch_num%1==0:
                     print('Epoch %d, batch %d, cross_entropy %g' % (epoch_i+1,batch_num, ce))
                 batch_num+=1
             iteration_error.append(step_error)
@@ -142,11 +143,11 @@ class CNNModel(object):
         y_prediction=[]
         y_true=[]
         for batch_i in iter_dataset(file_path,'test',self.batch_size):
-            #self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.keep_prob: 0.5,self.IsTraining:False,self.keep_prob_dense:0.2})
-            y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.keep_prob: 0.5,self.IsTraining:True,self.keep_prob_dense:0.2}))
-            y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.keep_prob: 0.5,self.IsTraining:True,self.keep_prob_dense:0.2}))
-        #print('Prediction:',y_prediction)
-        #print('True:',y_true)
+            #self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2})
+            y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
+            y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
+        print('Prediction:',y_prediction)
+        print('True:',y_true)
         #calculate accuracy
         p_correct=0
         for ii in range(len(y_prediction)):
@@ -161,10 +162,10 @@ class CNNModel(object):
 
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+    #os.environ["CUDA_VISIBLE_DEVICES"]="0"
     file_path='/usa/psu/Documents/CISC849/data/'
 
-    Model=CNNModel(file_path,100)
+    Model=CNNModel(file_path,20)
     #Model.build()
     Model.train()
     Model.test()
