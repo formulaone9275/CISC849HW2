@@ -145,8 +145,8 @@ class CNNModel(object):
         y_true=[]
         for batch_i in iter_dataset(file_path=file_path,model='test',batch_size=self.batch_size,depth_image=self.depth_image):
             #self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2})
-            y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
-            y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
+            y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
+            y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
         print('Prediction:',y_prediction)
         print('True:',y_true)
         #calculate accuracy
@@ -177,3 +177,4 @@ if __name__ == '__main__':
     #Model.build()
     Model.train()
     Model.test()
+    Model.show_loss_change()
