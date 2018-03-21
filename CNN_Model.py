@@ -1,6 +1,7 @@
 from __future__ import print_function,division
 import tensorflow as tf
 from padding_image import padding_image,iter_dataset
+import matplotlib.pyplot as plt
 import os
 class CNNModel(object):
 
@@ -123,7 +124,7 @@ class CNNModel(object):
         #with tf.Session() as sess:
         self.sess.run(tf.global_variables_initializer())
         self.sess.run(tf.local_variables_initializer())
-        iteration_error=[]
+        self.iteration_error=[]
         for epoch_i in range(self.train_epoch):
             step_error=0
             batch_num=1
@@ -132,11 +133,11 @@ class CNNModel(object):
                 ce = self.cross_entropy.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2})
                 step_error+=ce
 
-                if batch_num%1==0:
+                if batch_num%10==0:
                     print('Epoch %d, batch %d, cross_entropy %g' % (epoch_i+1,batch_num, ce))
                 batch_num+=1
-            iteration_error.append(step_error)
-        print('Cross Entropy Change:',iteration_error)
+            self.iteration_error.append(step_error)
+        print('Cross Entropy Change:',self.iteration_error)
 
 
     def test(self):
@@ -156,8 +157,14 @@ class CNNModel(object):
         acc=p_correct/len(y_prediction)
         print('Accuracy:',acc)
 
-
-
+    def show_loss_change(self):
+        plt.figure()
+        x_axle=[(a+1) for a in range(len(self.iteration_error))]
+        plt.plot(x_axle, self.iteration_error,linewidth=2)
+        plt.title('Loss change of RGB images ', fontsize=20)
+        plt.xlabel('Epoch Time', fontsize=16)
+        plt.ylabel('Loss', fontsize=16)
+        plt.show()
 
 
 
