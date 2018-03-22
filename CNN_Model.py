@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 
+'''
+Class for the convolutional neural network
+'''
 class CNNModel(object):
 
     def __init__(self,file_path,batch_size):
@@ -18,7 +21,10 @@ class CNNModel(object):
         self.image_length=350
         self.image_width=430
         self.channel_num=3
-
+    '''
+    Function to build the computational graph
+    It has the same structure with the CIFAR10 model, but has different fully-connected layer units.
+    '''
     def build(self):
 
         self.x = tf.placeholder(tf.float32, shape=[None, self.image_length, self.image_width,self.channel_num])
@@ -98,7 +104,7 @@ class CNNModel(object):
         #train_step = tf.train.AdamOptimizer(7e-4).minimize(cross_entropy)
         self.y_p = tf.argmax(self.y, 1)
         self.y_t = tf.argmax(self.y_, 1)
-        #calculate the precision, recall and F score
+        #calculate the accuracy
         acc, acc_op = tf.metrics.accuracy(labels=self.y_t, predictions=self.y_p)
 
 
@@ -123,8 +129,12 @@ class CNNModel(object):
                 self.train_step = optimizer.minimize(self.cross_entropy, global_step=self.global_step)
             except Exception as e:
                 print(e)
+    '''
+    Function to train the model
+    '''
 
     def train(self):
+
         if self.depth_image is True:
             self.channel_num=1
         if self.down_sample is True:
@@ -169,7 +179,9 @@ class CNNModel(object):
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self.iteration_error, f, pickle.HIGHEST_PROTOCOL)
 
-
+    '''
+    Function to test the model on the test dataset
+    '''
     def test(self):
         y_prediction=[]
         y_true=[]
@@ -187,6 +199,9 @@ class CNNModel(object):
         acc=p_correct/len(y_prediction)
         print('Accuracy:',acc)
 
+    '''
+    Function to show the figure the loss change
+    '''
     def show_loss_change(self):
         plt.figure()
         x_axle=[(a+1) for a in range(len(self.iteration_error))]
