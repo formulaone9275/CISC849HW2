@@ -10,14 +10,17 @@ Class for the convolutional neural network
 '''
 class CNNModel(object):
 
-    def __init__(self,file_path,batch_size):
-        self.file_path=file_path
+    def __init__(self,batch_size,depth_image=False,down_sample=False,pixel_interval=1):
+        if depth_image is True:
+            self.file_path='./depth_data/'
+        else:
+            self.file_path='./data/'
         self.batch_size=batch_size
-        self.train_epoch=15
+        self.train_epoch=50
         self.sess=tf.Session()
-        self.depth_image=False
-        self.down_sample=False
-        self.pixel_interval=2
+        self.depth_image=depth_image
+        self.down_sample=down_sample
+        self.pixel_interval=pixel_interval
         self.image_length=350
         self.image_width=430
         self.channel_num=3
@@ -215,10 +218,7 @@ class CNNModel(object):
 
 if __name__ == '__main__':
     #os.environ["CUDA_VISIBLE_DEVICES"]="0"
-    file_path='./data/'
-
-    Model=CNNModel(file_path,20)
-    #Model.build()
+    Model=CNNModel(20)
     Model.train()
     Model.test()
-    Model.show_loss_change()
+    #Model.show_loss_change()
