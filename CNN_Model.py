@@ -8,7 +8,7 @@ class CNNModel(object):
     def __init__(self,file_path,batch_size):
         self.file_path=file_path
         self.batch_size=batch_size
-        self.train_epoch=2
+        self.train_epoch=15
         self.sess=tf.Session()
         self.depth_image=False
         self.down_sample=False
@@ -170,7 +170,7 @@ class CNNModel(object):
 
 if __name__ == '__main__':
     #os.environ["CUDA_VISIBLE_DEVICES"]="0"
-    file_path='/usa/psu/Documents/CISC849/data/'
+    file_path='./data/'
 
     Model=CNNModel(file_path,20)
     #Model.build()

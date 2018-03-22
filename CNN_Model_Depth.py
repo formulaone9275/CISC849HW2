@@ -171,7 +171,7 @@ class CNNModel(object):
 
 if __name__ == '__main__':
     #os.environ["CUDA_VISIBLE_DEVICES"]="0"
-    file_path='/usa/psu/Documents/CISC849/depth_data/'
+    file_path='./depth_data/'
 
     Model=CNNModel(file_path,20)
     #Model.build()
