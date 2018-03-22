@@ -196,21 +196,27 @@ def iter_dataset(file_path,model,batch_size,down_sample=False,pixel_interval=1,d
     if file_num>0:
         yield training_data
 
+def get_dataset_shape(file_path,model,batch_size,down_sample=False,pixel_interval=1,depth_image=False):
+    final_path=file_path+model+'/'
+    training_data=[[],[]]
+    file_num=0
+    for file_i in os.listdir(final_path):
+        if depth_image is True:
+            image,label=padding_depth_image(final_path,file_i)
+        else:
+            image,label=padding_image(final_path,file_i)
+        if down_sample is True:
+            ds_image=down_sample_image(image,pixel_interval)
+        else:
+            ds_image=image
+        return ds_image.shape
 
 
 
 if __name__ == '__main__':
 
     #just testing, could delete the code below
-    file_path='/usa/psu/Documents/CISC849/depth_data/test/'
+    file_path='./depth_data/'
     file_name='container_5.png'
 
-    image,label=padding_depth_image(file_path,file_name)
-    print(image.shape)
-    plt.figure()
-    plt.imshow(image[:,:,0])
-    plt.show()
-    data=mpimg.imread(file_path+file_name)
-    plt.figure()
-    plt.imshow(data)
-    plt.show()
+    print(get_dataset_shape(file_path,'test',20,True,2,True))
