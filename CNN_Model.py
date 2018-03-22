@@ -3,6 +3,8 @@ import tensorflow as tf
 from padding_image import padding_image,iter_dataset
 import matplotlib.pyplot as plt
 import os
+import pickle
+
 class CNNModel(object):
 
     def __init__(self,file_path,batch_size):
@@ -138,6 +140,24 @@ class CNNModel(object):
                 batch_num+=1
             self.iteration_error.append(step_error)
         print('Cross Entropy Change:',self.iteration_error)
+        #get training accuracy
+        y_pred_training=[]
+        y_true_training=[]
+        for batch_i in iter_dataset(file_path=file_path,model='train',batch_size=self.batch_size,depth_image=self.depth_image):
+            y_pred_training+=list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
+            y_true_training+=list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
+        #calculate accuracy
+        p_correct=0
+        for ii in range(len(y_pred_training)):
+            if y_pred_training[ii]==y_true_training[ii]:
+                p_correct+=1
+        train_acc=p_correct/len(y_pred_training)
+        print('Training Accuracy:',train_acc)
+
+        #store the loss change
+        with open('Loss_change_list.pickle', 'wb') as f:
+            # Pickle the 'data' dictionary using the highest protocol available.
+            pickle.dump(self.iteration_error, f, pickle.HIGHEST_PROTOCOL)
 
 
     def test(self):
