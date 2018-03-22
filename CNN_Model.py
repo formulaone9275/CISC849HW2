@@ -1,6 +1,6 @@
 from __future__ import print_function,division
 import tensorflow as tf
-from padding_image import padding_image,iter_dataset
+from padding_image import padding_image,iter_dataset,get_dataset_shape
 import matplotlib.pyplot as plt
 import os
 import pickle
@@ -14,11 +14,14 @@ class CNNModel(object):
         self.sess=tf.Session()
         self.depth_image=False
         self.down_sample=False
-        self.pixel_interval=1
+        self.pixel_interval=2
+        self.image_length=350
+        self.image_width=430
+        self.channel_num=3
 
     def build(self):
 
-        self.x = tf.placeholder(tf.float32, shape=[None, 350, 430,3])
+        self.x = tf.placeholder(tf.float32, shape=[None, self.image_length, self.image_width,self.channel_num])
         self.y_ = tf.placeholder(tf.float32, shape=[None, 4])
         self.regularizer=tf.contrib.layers.l2_regularizer(scale=1e-4)
         self.drop_prob = tf.placeholder(tf.float32)
@@ -59,10 +62,11 @@ class CNNModel(object):
                           name='norm2')
         pool2 = tf.layers.max_pooling2d(inputs=norm2, pool_size=[3,3], strides=2,padding='same')
 
-        print(pool2.get_shape())
 
+        flat_num=pool2.shape[-1]*pool2.shape[-2]*pool2.shape[-3]
+        print(flat_num)
         # Dense Layer
-        pool2_flat = tf.reshape(pool2, [-1, 88*108*64])
+        pool2_flat = tf.reshape(pool2, [-1, flat_num])
         #
         print(pool2_flat.get_shape())
 
@@ -121,6 +125,12 @@ class CNNModel(object):
                 print(e)
 
     def train(self):
+        if self.depth_image is True:
+            self.channel_num=1
+        if self.down_sample is True:
+            l,w,c=get_dataset_shape(file_path=self.file_path,model='train',batch_size=self.batch_size,down_sample=self.down_sample,pixel_interval=self.pixel_interval,depth_image=self.depth_image)
+            self.image_length=l
+            self.image_width=w
         self.build()
 
         #with tf.Session() as sess:
@@ -130,7 +140,7 @@ class CNNModel(object):
         for epoch_i in range(self.train_epoch):
             step_error=0
             batch_num=1
-            for batch_i in iter_dataset(file_path,'train',self.batch_size):
+            for batch_i in iter_dataset(file_path=self.file_path,model='train',batch_size=self.batch_size,down_sample=self.down_sample,pixel_interval=self.pixel_interval,depth_image=self.depth_image):
                 self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2})
                 ce = self.cross_entropy.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2})
                 step_error+=ce
@@ -143,7 +153,7 @@ class CNNModel(object):
         #get training accuracy
         y_pred_training=[]
         y_true_training=[]
-        for batch_i in iter_dataset(file_path=file_path,model='train',batch_size=self.batch_size,depth_image=self.depth_image):
+        for batch_i in iter_dataset(file_path=self.file_path,model='train',batch_size=self.batch_size,down_sample=self.down_sample,pixel_interval=self.pixel_interval,depth_image=self.depth_image):
             y_pred_training+=list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
             y_true_training+=list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:True,self.drop_prob_dense:0.2}))
         #calculate accuracy
@@ -163,7 +173,7 @@ class CNNModel(object):
     def test(self):
         y_prediction=[]
         y_true=[]
-        for batch_i in iter_dataset(file_path,'test',self.batch_size):
+        for batch_i in iter_dataset(file_path=self.file_path,model='test',batch_size=self.batch_size,down_sample=self.down_sample,pixel_interval=self.pixel_interval,depth_image=self.depth_image):
             #self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2})
             y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
             y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
