@@ -192,8 +192,8 @@ class CNNModel(object):
             #self.train_step.run(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2})
             y_prediction += list(self.y_p.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
             y_true += list(self.y_t.eval(session=self.sess,feed_dict={self.x: batch_i[0],self.y_: batch_i[1], self.drop_prob: 0.5,self.IsTraining:False,self.drop_prob_dense:0.2}))
-        print('Prediction:',y_prediction)
-        print('True:',y_true)
+        #print('Prediction:',y_prediction)
+        #print('True:',y_true)
         #calculate accuracy
         p_correct=0
         for ii in range(len(y_prediction)):
@@ -218,7 +218,7 @@ class CNNModel(object):
 
 if __name__ == '__main__':
     #os.environ["CUDA_VISIBLE_DEVICES"]="0"
-    Model=CNNModel(20)
+    Model=CNNModel(20,True)
     Model.train()
     Model.test()
-    #Model.show_loss_change()
+    Model.show_loss_change()
